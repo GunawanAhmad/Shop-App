@@ -70,6 +70,7 @@ exports.postCart = (req,res,next) => {
     Cart.addProduct(prod.id, prod.price)
   })
   res.redirect('/cart')
+  
 }
 
 exports.deleteCartItem  = (req,res,next) => {
