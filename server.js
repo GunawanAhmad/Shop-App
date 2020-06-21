@@ -4,10 +4,9 @@ const express = require('express')
 const path = require('path')
 const app = express()
 const error = require('./controllers/error')
-const db = require('./util/database')
+
 app.set('view engine', 'ejs')
 app.set('views', 'views')
-
 const adminRoutes = require('./routes/admin.js')
 const shop = require('./routes/shop')
 
