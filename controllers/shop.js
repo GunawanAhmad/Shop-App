@@ -28,7 +28,8 @@ exports.getIndex = (req, res, next) => {
 
 exports.getProductbyId = (req,res,next) => {
   const prodId = req.params.productId
-  //findByPk adalah funtion bawaan sequelize
+  //findByPk is function from sequelise it self
+  //you can use findAll({id : prodId}) method 
   Product.findByPk(prodId).then((product) => {  
     res.render('shop/product-detail',{
        product : product,
