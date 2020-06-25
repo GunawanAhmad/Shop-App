@@ -9,6 +9,8 @@ const Product = require('./models/product')
 const User = require('./models/users')
 const Cart = require('./models/cart')
 const CartItem = require('./models/cart-item')
+const Order = require('./models/order')
+const OrderItem = require('./models/order-item')
 app.set('view engine', 'ejs')
 app.set('views', 'views')
 const adminRoutes = require('./routes/admin.js')
@@ -47,6 +49,10 @@ Cart.belongsTo(User)
 
 Cart.belongsToMany(Product, {through : CartItem})
 Product.belongsToMany(Cart, {through : CartItem})
+Order.belongsTo(User)
+User.hasMany(Order)
+Order.belongsToMany(Product, {through : OrderItem})
+
 
 sequelize.sync().then(result => {
     return User.findByPk(1) 
