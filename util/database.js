@@ -5,15 +5,13 @@ MongoClient = Mongodb.MongoClient
 
 // Database Name
 let db;
-const url = `mongodb://test:test@localhost:27017/?authMechanism=DEFAULT`;
-
 // Use connect method to connect to the Server
 const mongoConnect = (callback) => {
-    MongoClient.connect('mongodb://localhost:27017')
+    MongoClient.connect('mongodb://localhost:27017/db')
     .then(client => {
+        db = client.db('Shopping')
         console.log('connected')
-        db = client.db('shop')
-        callback(client)
+        callback()
     })
     .catch(err => {
         console.log(err)

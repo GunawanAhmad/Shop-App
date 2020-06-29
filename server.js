@@ -8,7 +8,7 @@ const mongoConnect = require('./util/database').mongoConnect
 app.set('view engine', 'ejs')
 app.set('views', 'views')
 const adminRoutes = require('./routes/admin.js')
-// const shop = require('./routes/shop')
+const shop = require('./routes/shop')
 
 
 app.use(bodyParser.urlencoded({extended : true}))
@@ -26,7 +26,7 @@ app.use((req,res,next) => {
 })
 
 app.use('/admin',adminRoutes)
-// app.use(shop)
+app.use(shop)
 // app.use(error.get404)
 
 mongoConnect(()=> {
