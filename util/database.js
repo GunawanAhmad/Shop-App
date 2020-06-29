@@ -1,14 +1,32 @@
-const mongodb = require('mongodb')
-const MongoClient = mongodb.MongoClient
+
+const Mongodb = require('mongodb');
+MongoClient = Mongodb.MongoClient
 
 
+// Database Name
+let db;
+const url = `mongodb://test:test@localhost:27017/?authMechanism=DEFAULT`;
+
+// Use connect method to connect to the Server
 const mongoConnect = (callback) => {
-    MongoClient.connect('mongodb+srv://gunawanfsdev:kaput123@cluster0-0jbmd.mongodb.net/?retryWrites=true&w=majority')
-.then(client => {
-    console.log('connected')
-    callback(client)
-})
-.catch(err => console.log(err))
+    MongoClient.connect('mongodb://localhost:27017')
+    .then(client => {
+        console.log('connected')
+        db = client.db('shop')
+        callback(client)
+    })
+    .catch(err => {
+        console.log(err)
+        throw err
+    })
 }
 
-module.exports = mongoConnect;
+const getDb = () => {
+    if(db) {
+        return db;
+    }
+    throw 'No Database'
+}
+
+exports.mongoConnect = mongoConnect
+exports.getDb = getDb
