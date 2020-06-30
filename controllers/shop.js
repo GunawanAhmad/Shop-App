@@ -61,34 +61,39 @@ exports.getCart = (req, res, next) => {
 
 exports.postCart = (req,res,next) => {
   const productId = req.body.productId
-  let fatchedcart;
-  req.user.getCart()
-  .then(cart => {
-    fatchedcart = cart
-    return cart.getProducts({where  : {id : productId}})
-  }).then(products => {
-    let product;
-    if (products.length > 0) {
-      product = products[0]
-    }
-    let newQuantity = 1
-    if (product) {
-      let oldQuantity = product.CartItem.quantity + 1
-      return fatchedcart.addProduct(product, {through : {quantity : oldQuantity}}).then(result => {
-        res.redirect('/cart')
-      })
-    } 
-    return Product.findByPk(productId).then(product => {
-      return fatchedcart.addProduct(product, {through : {quantity : newQuantity}})
-    }).then(result => {
-      res.redirect('/cart')
-    }).catch(err => {
-      console.log(err)
-    })
-  }).catch(err => {
-    console.log(err)
-  })
- 
+  console.log('sad' + req.user.cart)
+  Product.findById(productId)
+  .then(product => {
+    return req.user.addToCart(product)
+  }).then(result =>  console.log('yey'))
+  .catch(err => console.log(err))
+  // let fatchedcart;
+  // req.user.getCart()
+  // .then(cart => {
+  //   fatchedcart = cart
+  //   return cart.getProducts({where  : {id : productId}})
+  // }).then(products => {
+  //   let product;
+  //   if (products.length > 0) {
+  //     product = products[0]
+  //   }
+  //   let newQuantity = 1
+  //   if (product) {
+  //     let oldQuantity = product.CartItem.quantity + 1
+  //     return fatchedcart.addProduct(product, {through : {quantity : oldQuantity}}).then(result => {
+  //       res.redirect('/cart')
+  //     })
+  //   } 
+  //   return Product.findByPk(productId).then(product => {
+  //     return fatchedcart.addProduct(product, {through : {quantity : newQuantity}})
+  //   }).then(result => {
+  //     res.redirect('/cart')
+  //   }).catch(err => {
+  //     console.log(err)
+  //   })
+  // }).catch(err => {
+  //   console.log(err)
+  // })
   
 }
 

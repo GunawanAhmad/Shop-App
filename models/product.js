@@ -3,12 +3,13 @@ const getDb = require('../util/database').getDb
 const ObjectID = mongodb.ObjectID
 
 class Product {
-  constructor(title, price, imageUrl, description, id) {
+  constructor(title, price, imageUrl, description, id, userId) {
     this.title = title
     this.price = price
     this.imageUrl = imageUrl
     this.description = description
     this._id = new ObjectID(id)
+    this.userId =  userId
   }
 
 
@@ -18,7 +19,7 @@ class Product {
     .then(res => console.log('yey'))
     .catch(err => console.log(err))
   }
-  
+
 
   updateProduct() {
     let db = getDb();
