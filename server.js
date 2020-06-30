@@ -27,7 +27,7 @@ app.use((req,res,next) => {
 
 app.use('/admin',adminRoutes)
 app.use(shop)
-// app.use(error.get404)
+app.use(error.get404)
 
 mongoConnect(()=> {
     app.listen(5000)
