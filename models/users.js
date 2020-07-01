@@ -63,8 +63,10 @@ class User {
                     return i.productId.toString() === p._id.toString()
                 }).quantity}
             })
+            
         })
         .catch(err => console.log(err))
+       
     }
     deleteCart(prodId) {
         const updatedCart = this.cart.items.filter(prod => {
@@ -105,6 +107,8 @@ class User {
         const db = getDb();
         return db.collection('order').find({'user._id' : new ObjectID(this._id)}).toArray()
     }
+
+
     cleanCart() {
         let prodCartId = this.cart.items;
         let id = []
@@ -112,8 +116,25 @@ class User {
             id.push(prodCartId[i].productId)
         }
         const db = getDb();
-       
-        
+        db.collection('products').find({}).toArray()
+        .then(prod => {
+            for(let i=0; i< id.length; i++) {
+                let check = true
+                for(let j =0; j<prod.length; j++) {
+                    if (id[i].toString() === prod[j]._id.toString()) {
+                        check = false
+                    }
+                }
+                if(check) {
+                    this.cart.items.splice(i, 1)
+                }
+            }
+            db.collection('users').updateOne({_id : new ObjectID(this._id)}, {$set : {cart : {items : this.cart.items}}})
+            .then(result => console.log('cleaning succes'))
+            .catch(err => console.log(err))
+        })
+        .catch(err => console.log(arr))
+
     }
     
 }
