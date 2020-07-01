@@ -51,6 +51,7 @@ class User {
         .catch(err => console.log(err))
     }
     getCart() {
+        this.cleanCart()
         const db = getDb()
         const productIds = this.cart.items.map(i => {
             return i.productId;
@@ -75,7 +76,44 @@ class User {
             console.log('')
         })
         .catch(err =>  console.log(err))
+    }
 
+
+    addOrder() {
+        const db = getDb()
+        return this.getCart().then(products => {
+            let order = {
+                items : products,
+                user : {
+                    _id : new ObjectID(this._id),
+                    name : this.name,
+                    email : this.email
+                }
+            };
+            return db.collection('order').insertOne(order)
+        })
+        .then(result => {
+            this.cart = {items : []}
+            return db.collection('users').updateOne({_id : new ObjectID(this._id)}, {$set :{cart : {items : [] } } } )
+            .then(result => {
+                console.log('ordered')
+            })
+            .catch(err => console.log(err))
+        })
+    }
+    getOrder() {
+        const db = getDb();
+        return db.collection('order').find({'user._id' : new ObjectID(this._id)}).toArray()
+    }
+    cleanCart() {
+        let prodCartId = this.cart.items;
+        let id = []
+        for(let i = 0; i< prodCartId.length; i++) {
+            id.push(prodCartId[i].productId)
+        }
+        const db = getDb();
+       
+        
     }
     
 }
