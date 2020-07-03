@@ -1,13 +1,22 @@
 const Product = require('../models/product');
-const getDb = require('../util/database').getDb
+// const getDb = require('../util/database').getDb
+
+const { ObjectID } = require('mongodb');
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll().then(result => {
+  //you can use .populate() to get all user data not just the userID
+  //in mongoose, req.user only return the user._id not all the data, use populate to fetch all the data
+  //u also can use select() method to filter which data or field you want to fetch
+  //but we dont need that method in this project
+  Product.find()
+  // .select('title price -_id' )
+  // .populate('userId')
+  .then(result => {
     res.render('shop/product-list', {
       prods: result,
       pageTitle: 'All Products',
       path: '/products',
-      isAuthenticated : req.session.isLoggedIn
+      // isAuthenticated : req.session.isLoggedIn
     });
   }).catch(err => {
     console.log(err)
@@ -16,12 +25,12 @@ exports.getProducts = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.fetchAll().then(result => {
+  Product.find().then(result => {
     res.render('shop/index', {
       prods: result,
       pageTitle: 'Shop',
       path: '/',
-      isAuthenticated : req.session.isLoggedIn
+      // isAuthenticated : req.session.isLoggedIn
     });
   }).catch(err => {
     console.log(err)
@@ -29,13 +38,14 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getProductbyId = (req,res,next) => {
-  const prodId = req.params.productId
-  Product.findById(prodId).then((product) => {  
+  const prodId = new ObjectID(req.params.productId)
+  Product.findById(prodId)
+  .then((product) => {  
     res.render('shop/product-detail',{
        product : product,
        pageTitle : 'Product Detail', 
        path : '/products',
-       isAuthenticated : req.session.isLoggedIn
+      //  isAuthenticated : req.session.isLoggedIn
       })
   })
   .catch(err => {
@@ -50,7 +60,7 @@ exports.getCart = (req, res, next) => {
         path: '/cart',
         pageTitle: 'Your Cart',
         products : products,
-        isAuthenticated : req.session.isLoggedIn
+        // isAuthenticated : req.session.isLoggedIn
       });
     })
   .catch(err=> {
@@ -59,7 +69,7 @@ exports.getCart = (req, res, next) => {
 };
 
 exports.postCart = (req,res,next) => {
-  const productId = req.body.productId
+  const productId = new ObjectID(req.body.productId)
   Product.findById(productId)
   .then(product => {
     return req.user.addToCart(product)
@@ -86,7 +96,7 @@ exports.getOrders = (req, res, next) => {
       path: '/orders',
       pageTitle: 'Your Orders',
       orders : orders,
-      isAuthenticated : req.session.isLoggedIn
+      // isAuthenticated : req.session.isLoggedIn
     });
   })
   .catch(err => console.log(err))

@@ -1,10 +1,12 @@
 const Product = require('../models/product');
+const { ObjectID} = require('mongodb');
+
 
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/add-product', {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
-    isAuthenticated : req.session.isLoggedIn
+    // isAuthenticated : req.session.isLoggedIn
   });
 };
 
@@ -13,7 +15,13 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const product = new Product(title, price, imageUrl, description, null, req.user._id)
+  const product = new Product({
+    title : title,
+    price : price,
+    description : description,
+    imageUrl : imageUrl,
+    userId : req.user
+  })
   product.save()
   .then(result => {
     // console.log(result)
@@ -29,7 +37,7 @@ exports.getEditProduct = (req,res,next) => {
   if (!editMode) {
     return res.redirect('/')
   }
-  const prodId = req.params.productId
+  const prodId = new ObjectID(req.params.productId)
   Product.findById(prodId)
   .then(product => {
     if (!product) {
@@ -40,7 +48,7 @@ exports.getEditProduct = (req,res,next) => {
       path : '/edit-product',
       editing : true,
       product : product,
-      isAuthenticated : req.session.isLoggedIn
+      // isAuthenticated : req.session.isLoggedIn
     })
   }).catch(err => {
     console.log(err)
@@ -48,13 +56,19 @@ exports.getEditProduct = (req,res,next) => {
 }
 
 exports.postEditProduct = (req,res,next) => {
-  const prodId = req.body.productId
+  const prodId = new ObjectID(req.body.productId)
   const newTitle = req.body.title
   const newImageUrl = req.body.imageUrl
   const newPrice = req.body.price
   const newDesc = req.body.description
-  const newProduct = new Product(newTitle,newPrice,newImageUrl,newDesc, prodId);
-  newProduct.updateProduct()
+  Product.findById(prodId)
+  .then(product => {
+    product.title = newTitle;
+    product.price = newPrice;
+    product.imageUrl = newImageUrl;
+    product.description = newDesc; 
+    return product.save()
+  })
   .then(result => {
     console.log('PRODUCT UPDATED')
     res.redirect('/admin/products')
@@ -65,8 +79,8 @@ exports.postEditProduct = (req,res,next) => {
 }
 
 exports.deleteProduct = (req,res,next) => {
-  const prodId = req.body.productId
-  Product.deleteProduct(prodId).then(result => {
+  const prodId = new ObjectID(req.body.productId)
+  Product.findByIdAndRemove(prodId).then(result => {
     console.log('deleted')
   }).then(resp => {
       console.log('PRODUCT DELETED')
@@ -78,13 +92,13 @@ exports.deleteProduct = (req,res,next) => {
 }
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
   .then(result => {
     res.render('admin/products', {
       prods: result,
       pageTitle: 'Admin Products',
       path: '/admin/products',
-      isAuthenticated : req.session.isLoggedIn
+      // isAuthenticated : req.session.isLoggedIn
     });
   }).catch(err => {
     console.log(err)
