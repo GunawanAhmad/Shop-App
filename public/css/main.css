@@ -63,6 +63,14 @@ form {
 	margin: 0 1rem;
 	padding: 0;
 }
+.main-header__item button {
+	background: none;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	color: white;
+	font-size: medium;
+}
 
 .main-header__item a {
 	text-decoration: none;

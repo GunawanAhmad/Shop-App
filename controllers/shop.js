@@ -44,7 +44,7 @@ exports.getProductbyId = (req,res,next) => {
 }
 
 exports.getCart = (req, res, next) => {
-  req.session.user.getCart()
+  req.user.getCart()
     .then(products => {
       res.render('shop/cart', {
         path: '/cart',
@@ -62,7 +62,7 @@ exports.postCart = (req,res,next) => {
   const productId = req.body.productId
   Product.findById(productId)
   .then(product => {
-    return req.session.user.addToCart(product)
+    return req.user.addToCart(product)
   }).then(result =>  {
     res.redirect('/cart')
   })
@@ -71,7 +71,7 @@ exports.postCart = (req,res,next) => {
 
 exports.deleteCartItem  = (req,res,next) => {
   const prodId = req.body.productId
-  req.session.user.deleteCart(prodId)
+  req.user.deleteCart(prodId)
   .then(respons => {
     res.redirect('/cart')
   })
@@ -79,7 +79,7 @@ exports.deleteCartItem  = (req,res,next) => {
 }
 
 exports.getOrders = (req, res, next) => {
-  req.session.user.getOrder()
+  req.user.getOrder()
   .then(orders => {
     console.log(orders)
     res.render('shop/orders', {
@@ -95,7 +95,7 @@ exports.getOrders = (req, res, next) => {
 
 
 exports.postOrder = (req,res,next) => {
-  req.session.user.addOrder()
+  req.user.addOrder()
   .then(result => {
     res.redirect('/orders')
   })
