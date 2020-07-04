@@ -17,7 +17,7 @@ exports.getProducts = (req, res, next) => {
       prods: result,
       pageTitle: 'All Products',
       path: '/products',
-      // isAuthenticated : req.session.isLoggedIn
+      isAuthenticated : req.session.isLoggedIn
     });
   }).catch(err => {
     console.log(err)
@@ -31,7 +31,7 @@ exports.getIndex = (req, res, next) => {
       prods: result,
       pageTitle: 'Shop',
       path: '/',
-      // isAuthenticated : req.session.isLoggedIn
+      isAuthenticated : req.session.isLoggedIn
     });
   }).catch(err => {
     console.log(err)
@@ -46,7 +46,7 @@ exports.getProductbyId = (req,res,next) => {
        product : product,
        pageTitle : 'Product Detail', 
        path : '/products',
-      //  isAuthenticated : req.session.isLoggedIn
+       isAuthenticated : req.session.isLoggedIn
       })
   })
   .catch(err => {
@@ -63,7 +63,7 @@ exports.getCart = (req, res, next) => {
         path: '/cart',
         pageTitle: 'Your Cart',
         products : products,
-        // isAuthenticated : req.session.isLoggedIn
+        isAuthenticated : req.session.isLoggedIn
       });
     })
   .catch(err=> {
@@ -75,7 +75,6 @@ exports.postCart = (req,res,next) => {
   const productId = new ObjectID(req.body.productId)
   Product.findById(productId)
   .then(product => {
-    
     return req.user.addToCart(product)
   }).then(result =>  {
     res.redirect('/cart')
@@ -103,7 +102,7 @@ exports.postOrder = (req, res, next) => {
       const order = new Order({
         user : {
           name : req.user.name,
-          userId : req.user
+          userId : req.session.user
         },
         products : products
       })
@@ -128,7 +127,7 @@ exports.getOrders = (req,res,next) => {
       path: '/orders',
       pageTitle: 'Your Orders',
       orders : orders,
-      // isAuthenticated : req.session.isLoggedIn
+      isAuthenticated : req.session.isLoggedIn
     });
    
   })
