@@ -1,4 +1,5 @@
 const Product = require('../models/product');
+const Order = require('../models/order');
 // const getDb = require('../util/database').getDb
 
 const { ObjectID } = require('mongodb');
@@ -54,8 +55,10 @@ exports.getProductbyId = (req,res,next) => {
 }
 
 exports.getCart = (req, res, next) => {
-  req.user.getCart()
-    .then(products => {
+  req.user.populate('cart.items.productId')
+  .execPopulate() // puplate method does not give a promise, execPopulate will give the promise
+    .then(user => {
+      const products = user.cart.items
       res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your Cart',
@@ -72,6 +75,7 @@ exports.postCart = (req,res,next) => {
   const productId = new ObjectID(req.body.productId)
   Product.findById(productId)
   .then(product => {
+    
     return req.user.addToCart(product)
   }).then(result =>  {
     res.redirect('/cart')
@@ -80,34 +84,53 @@ exports.postCart = (req,res,next) => {
 }
 
 exports.deleteCartItem  = (req,res,next) => {
-  const prodId = req.body.productId
-  req.user.deleteCart(prodId)
+  const prodId = new ObjectID(req.body.productId)
+  console.log(prodId)
+  req.user.deleteCartItem(prodId)
   .then(respons => {
     res.redirect('/cart')
   })
   .catch(err => console.log(err))
 }
 
-exports.getOrders = (req, res, next) => {
-  req.user.getOrder()
+exports.postOrder = (req, res, next) => {
+  req.user.populate('cart.items.productId')
+  .execPopulate() // puplate method does not give a promise, execPopulate will give the promise
+  .then(user => {
+      const products = user.cart.items.map(i => {
+        return {quantity : i.quantity, productData : {...i.productId._doc}}
+      })
+      const order = new Order({
+        user : {
+          name : req.user.name,
+          userId : req.user
+        },
+        products : products
+      })
+      return order.save()
+  })
   .then(orders => {
-    console.log(orders)
-    res.render('shop/orders', {
-      path: '/orders',
-      pageTitle: 'Your Orders',
-      orders : orders,
-      // isAuthenticated : req.session.isLoggedIn
-    });
+    return req.user.clearCart()
+    
+  })
+  .then(result => {
+    res.redirect('/orders')
   })
   .catch(err => console.log(err))
   
 };
 
 
-exports.postOrder = (req,res,next) => {
-  req.user.addOrder()
-  .then(result => {
-    res.redirect('/orders')
+exports.getOrders = (req,res,next) => {
+  Order.find({'user.userId' : req.user._id})
+  .then(orders => {
+    res.render('shop/orders', {
+      path: '/orders',
+      pageTitle: 'Your Orders',
+      orders : orders,
+      // isAuthenticated : req.session.isLoggedIn
+    });
+   
   })
   .catch(err =>  console.log(err))
 }

@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose')
 
 const UserSchema = new mongoose.Schema({
@@ -49,23 +50,19 @@ UserSchema.methods.addToCart = function(product) {
         this.save()
 }
 
-UserSchema.methods.getCart = function() {
-    
-        const db = getDb()
-        const productIds = this.cart.items.map(i => {
-            return i.productId;
-        })
-        return db.collection('products').find({_id : {$in : productIds}}).toArray()
-        .then(products => {
-            return products.map(p => {
-                return {...p, quantity : this.cart.items.find(i => {
-                    return i.productId.toString() === p._id.toString()
-                }).quantity}
-            })
-            
-        })
-        .catch(err => console.log(err))
+UserSchema.methods.deleteCartItem = function(prodId) {
+    const updatedCart = this.cart.items.filter(prod => {
+        return prod.productId.toString() != prodId;
+     })
+    this.cart.items = updatedCart;
+    return this.save()
 }
+
+UserSchema.methods.clearCart = function() {
+    this.cart = {items : []}
+    return this.save()
+} 
+
 
 module.exports = mongoose.model('User', UserSchema)
 
