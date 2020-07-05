@@ -6,7 +6,8 @@ exports.getlogin = (req, res, next) => {
       res.render('auth/login', {
         path: '/login',
         pageTitle : 'Login Page',
-        isAuthenticated : req.session.isLoggedIn
+        isAuthenticated : req.session.isLoggedIn,
+        errorMessage : req.flash('error')
       });
 };
 
@@ -16,6 +17,7 @@ exports.postLogin = (req,res,next) => {
     User.findOne({email : email})
     .then(user => {
       if(!user) {
+        req.flash('error', 'Invalid Email')
         return res.redirect('/login')
       }
       bcrypt.compare(password, user.password).then(result => {
@@ -28,6 +30,7 @@ exports.postLogin = (req,res,next) => {
           })
           
         }
+        req.flash('error', 'Invalid Password')
         res.redirect('/login')
       }).catch(err => {
         console.log(err)
