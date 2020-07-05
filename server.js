@@ -5,6 +5,7 @@ const session = require('express-session')
 const path = require('path')
 const mongoose = require('mongoose')
 const MongoDBStore = require('connect-mongodb-session')(session)
+const csrf = require('csurf')
 
 
 
@@ -15,6 +16,8 @@ const store = new MongoDBStore({
     collection : 'sessions',
     dbName : 'myShoppingApp'
 })
+
+const csrfProtection = csrf()
 
 app.use(session({
     secret: 'foo',
@@ -37,6 +40,7 @@ const authRoutes = require('./routes/auth')
 
 app.use(bodyParser.urlencoded({extended : true}))
 app.use(express.static(path.join(__dirname, 'public')))
+app.use(csrfProtection);
 
 app.use((req,res,next) => {
     if(!req.session.user) {
@@ -50,6 +54,12 @@ app.use((req,res,next) => {
     .catch(err => console.log(err))
 })
 
+app.use((req,res,next) => {
+    res.locals.isAuthenticated = req.session.isLoggedIn
+    res.locals.csrfToken = req.csrfToken()
+    next()
+})
+
 
 app.use('/admin',adminRoutes)
 app.use(shop)
@@ -61,19 +71,6 @@ mongoose.connect('mongodb://localhost:27017/db', {
     dbName : 'myShoppingApp'
 })
 .then(result => {
-    User.findOne().then(user => {
-        if(!user) {
-            const user = new User({
-                name : 'Gunawan',
-                email : 'test@email.com',
-                cart : {
-                    items : []
-                }
-            })
-            user.save()
-        }
-    })
-    
     app.listen(5000)
 })
 .catch(err => console.log(err))

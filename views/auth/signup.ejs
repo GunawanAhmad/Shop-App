@@ -6,17 +6,21 @@
    <%- include('../includes/navigation.ejs') %>
 
     <main>
-        <form class="login-form" action="/login" method="POST">
+        <form class="login-form" action="/signup" method="POST">
             <div class="form-control">
                 <label for="email">E-mail</label>
-                <input type="email" name="email" id="email" >
+                <input type="email" name="email"  >
             </div>
             <div class="form-control">
                 <label for="password">Password</label>
-                <input type="password" name="password" id="imageUrl">
+                <input type="password" name="password" >
+            </div>
+            <div class="form-control">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" name="confirmPassword" >
             </div>
             <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
-            <button type="submit" class="btn">LOGIN</button>
+            <button type="submit" class="btn">Sign Up</button>
         </form>
     </main>
 <%- include('../includes/end.ejs') %>
