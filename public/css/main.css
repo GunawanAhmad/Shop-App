@@ -233,6 +233,28 @@ form {
 form .order {
 	margin: auto;
 }
+.user-message {
+	margin: auto;
+	width: 100px;
+	text-align: center;
+	background-color: #00695c;
+	color: white;
+	padding: 5px 20px;
+	box-sizing: content-box;
+	border-radius: 5px;
+}
+
+.error-message {
+	margin: auto;
+	max-width: 200px;
+	width: auto;
+	text-align: center;
+	background-color: rgb(253, 75, 75);
+	color: white;
+	padding: 5px 20px;
+	box-sizing: content-box;
+	border-radius: 5px;
+}
 
 @media (min-width: 768px) {
 	.main-header__nav {
@@ -247,5 +269,9 @@ form .order {
 @media (max-width: 768px) {
 	.main-header__item-list {
 		display: none;
+	}
+	.user-message {
+		margin: auto;
+		/* width: 30rem; */
 	}
 }

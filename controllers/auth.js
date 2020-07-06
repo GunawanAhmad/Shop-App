@@ -3,11 +3,17 @@ const User = require('../models/users')
 
 
 exports.getlogin = (req, res, next) => {
+  let message = req.flash('error')
+  if(message.length > 0) {
+    message = message[0]
+  } else {
+    message = null
+  }
       res.render('auth/login', {
         path: '/login',
         pageTitle : 'Login Page',
         isAuthenticated : req.session.isLoggedIn,
-        errorMessage : req.flash('error')
+        errorMessage : message
       });
 };
 
@@ -36,9 +42,6 @@ exports.postLogin = (req,res,next) => {
         console.log(err)
         res.redirect('/login')
       })
-       
-        
-       
     })
     .catch(err => console.log(err))
 }
@@ -51,10 +54,17 @@ exports.logOut = (req,res,next) => {
 }
 
 exports.signUp = (req,res,next) => {
+  let message = req.flash('error')
+  if(message.length > 0) {
+    message = message[0]
+  } else {
+    message = null
+  }
   res.render('auth/signup', {
     path : '/signup',
     pageTitle : 'Sign Up',
-    isAuthenticated : false
+    isAuthenticated : false,
+    errorMessage : message
   })
 }
 
@@ -64,6 +74,7 @@ exports.postSignUp = (req,res,next) => {
   const confirmPassword = req.body.confirmPassword
   User.findOne({email : email}).then(userDoc => {
     if(userDoc) {
+      req.flash('error', 'Email is already exist')
       return res.redirect('/signup')
     } 
     return bcrypt.hash(password, 12).then(hashedPassword => {
