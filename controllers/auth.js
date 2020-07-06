@@ -1,5 +1,15 @@
 const bcrypt = require('bcryptjs')
 const User = require('../models/users')
+const nodemailer = require('nodemailer')
+
+
+const transporter = nodemailer.createTransport({
+  service : 'gmail',
+  auth : {
+    user : 'gunawanleomessi@gmail.com',
+    pass : 'kaput123'
+  }
+})
 
 
 exports.getlogin = (req, res, next) => {
@@ -87,7 +97,19 @@ exports.postSignUp = (req,res,next) => {
     })
     .then(result => {
       res.redirect('/login')
-    })
+      return transporter.sendMail({
+        to : email,
+        from : 'gunawanleomessi@gmail.com',
+        subject : 'Sign Up',
+        html : '<h1>Sign Up for LocalHost Shopp App is succes</h1>'
+      }, function(error,info) {
+        if(error) {
+          console.log(error)
+        } else {
+          console.log('Email Sent ' + info.response )
+        }
+      })    
+    }).catch(err => console.log(err))
   })
   .catch(err => console.log(err))
 }
