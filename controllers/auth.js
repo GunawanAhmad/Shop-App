@@ -113,3 +113,22 @@ exports.postSignUp = (req,res,next) => {
   })
   .catch(err => console.log(err))
 }
+
+
+exports.getReset = (req,res,next) => {
+  let message = req.flash('error')
+  if(message.length > 0) {
+    message = message[0]
+  } else {
+    message = null
+  }
+  res.render('auth/resetPassword', {
+    path : '/reset-password',
+    pageTitle : 'Reset Password',
+    errorMessage : message
+  })
+}
+
+exports.postReset = (req,res,next) => {
+  let message = req.flash()
+}
