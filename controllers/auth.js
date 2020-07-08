@@ -3,6 +3,7 @@ const User = require('../models/users')
 const nodemailer = require('nodemailer')
 const crypto = require('crypto')
 const { ObjectID } = require('mongodb')
+const { validationResult } = require('express-validator/check')
 
 const transporter = nodemailer.createTransport({
   service : 'gmail',
@@ -83,6 +84,17 @@ exports.postSignUp = (req,res,next) => {
   const email = req.body.email;
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword
+  const error = validationResult(req)
+  
+  if(!error.isEmpty()) {
+    console.log(error.array())
+    return res.status(422).render('auth/signup', {
+      path : '/signup',
+      pageTitle : 'Sign Up',
+      isAuthenticated : false,
+      errorMessage : error.array()[0].msg
+    })
+  }
   User.findOne({email : email}).then(userDoc => {
     if(userDoc) {
       req.flash('error', 'Email is already exist')
