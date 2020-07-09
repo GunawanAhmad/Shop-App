@@ -10,15 +10,32 @@ exports.getAddProduct = (req, res, next) => {
   res.render('admin/add-product', {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
+    title : '',
+    price : 0,
+    description : '',
     isAuthenticated : req.session.isLoggedIn,
+    errorMessage : ''
   });
 };
 
 exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
+  const image = req.file;
+  console.log(image)
   const price = req.body.price;
   const description = req.body.description;
+  if(!image) {
+    res.render('admin/add-product', {
+      pageTitle: 'Add Product',
+      path: '/admin/add-product',
+      title : title,
+      price : price,
+      description : description,
+      errorMessage : 'Wrong Image format',
+      isAuthenticated : req.session.isLoggedIn,
+    });
+  }
+  const imageUrl = image.path
   const product = new Product({
     title : title,
     price : price,
@@ -31,7 +48,7 @@ exports.postAddProduct = (req, res, next) => {
     // console.log(result)
     console.log('Product Created')
     res.redirect('/admin/products')
-  }).catch(er => {
+  }).catch(err => {
     const error = new Error(err)
     error.httpStatusCode = 500;
     return next(error);
@@ -65,8 +82,9 @@ exports.getEditProduct = (req,res,next) => {
 }
 
 exports.postEditProduct = (req,res,next) => {
+  const prodId = req.body.productId
   const newTitle = req.body.title
-  const newImageUrl = req.body.imageUrl
+  const newImage = req.file
   const newPrice = req.body.price
   const newDesc = req.body.description
   Product.findById(prodId)
@@ -76,7 +94,9 @@ exports.postEditProduct = (req,res,next) => {
     }
     product.title = newTitle;
     product.price = newPrice;
-    product.imageUrl = newImageUrl;
+    if(newImage) {
+      product.imageUrl = newImage.path;
+    }
     product.description = newDesc; 
     return product.save().then(result => {
       console.log('PRODUCT UPDATED')
