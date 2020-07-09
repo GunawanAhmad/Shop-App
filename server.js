@@ -51,10 +51,15 @@ app.use((req,res,next) => {
     }
     User.findById(req.session.user._id)
     .then(user => {
+        if(!user) {
+            return next()
+        }
         req.user = user
         next()
     })
-    .catch(err => console.log(err))
+    .catch(err => {
+        next(new Error(err))
+    })
 })
 
 app.use((req,res,next) => {
@@ -63,11 +68,18 @@ app.use((req,res,next) => {
     next()
 })
 
-
+app.use('/500', error.get500)
 app.use('/admin',adminRoutes)
 app.use(shop)
 app.use(authRoutes)
+
 app.use(error.get404)
+
+
+app.use((error, req,res,next) => {
+    console.log(error)
+    res.redirect('/500')
+})
 
 
 mongoose.connect('mongodb://localhost:27017/db', {

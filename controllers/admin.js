@@ -10,7 +10,7 @@ exports.getAddProduct = (req, res, next) => {
   res.render('admin/add-product', {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
-    isAuthenticated : req.session.isLoggedIn
+    isAuthenticated : req.session.isLoggedIn,
   });
 };
 
@@ -32,7 +32,9 @@ exports.postAddProduct = (req, res, next) => {
     console.log('Product Created')
     res.redirect('/admin/products')
   }).catch(er => {
-    console.log(er)
+    const error = new Error(err)
+    error.httpStatusCode = 500;
+    return next(error);
   })
 };
 
@@ -56,12 +58,13 @@ exports.getEditProduct = (req,res,next) => {
       isAuthenticated : req.session.isLoggedIn
     })
   }).catch(err => {
-    console.log(err)
+    const error = new Error(err)
+    error.httpStatusCode = 500;
+    return next(error);
   })
 }
 
 exports.postEditProduct = (req,res,next) => {
-  const prodId = new ObjectID(req.body.productId)
   const newTitle = req.body.title
   const newImageUrl = req.body.imageUrl
   const newPrice = req.body.price
@@ -79,7 +82,9 @@ exports.postEditProduct = (req,res,next) => {
       console.log('PRODUCT UPDATED')
       res.redirect('/admin/products')
     }).catch(err => {
-      console.log(err)
+      const error = new Error(err)
+    error.httpStatusCode = 500;
+    return next(error);
     })
   })
   
@@ -97,7 +102,9 @@ exports.deleteProduct = (req,res,next) => {
       console.log('PRODUCT DELETED')
       res.redirect('/admin/products')
   }).catch(err => {
-    console.log(err)
+    const error = new Error(err)
+    error.httpStatusCode = 500;
+    return next(error);
   })
   
 }
@@ -112,7 +119,9 @@ exports.getProducts = (req, res, next) => {
       isAuthenticated : req.session.isLoggedIn
     });
   }).catch(err => {
-    console.log(err)
+    const error = new Error(err)
+    error.httpStatusCode = 500;
+    return next(error);
   })
  
 };
