@@ -1,5 +1,7 @@
 const Product = require('../models/product');
 const Order = require('../models/order');
+const fs = require('fs')
+const path = require('path')
 // const getDb = require('../util/database').getDb
 
 const { ObjectID } = require('mongodb');
@@ -132,5 +134,22 @@ exports.getOrders = (req,res,next) => {
    
   })
   .catch(err =>  console.log(err))
+}
+
+
+exports.getInvoice = (req,res,next) => {
+  const orderId = req.params.orderId;
+  const invoiceName = 'invoice-' + orderId + '.pdf'
+  console.log(invoiceName)
+  const invoicePath = path.join('data', 'invoices', invoiceName);
+  console.log(invoicePath)
+  fs.readFile(invoicePath, (err,data)=> {
+    console.log(data)
+    if(err) {
+      console.log('error gan')
+      return next(err)
+    }
+    res.send(data)
+  })
 }
 
