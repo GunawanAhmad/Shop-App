@@ -1,6 +1,7 @@
 const Product = require('../models/product');
 const { ObjectID} = require('mongodb');
 const product = require('../models/product');
+const fileHelper = require('../util/file')
 
 
 exports.getAddProduct = (req, res, next) => {
@@ -95,6 +96,7 @@ exports.postEditProduct = (req,res,next) => {
     product.title = newTitle;
     product.price = newPrice;
     if(newImage) {
+      fileHelper.deleteFile(product.imageUrl)
       product.imageUrl = newImage.path;
     }
     product.description = newDesc; 
@@ -113,12 +115,14 @@ exports.postEditProduct = (req,res,next) => {
 
 exports.deleteProduct = (req,res,next) => {
   const prodId = new ObjectID(req.body.productId)
-  Product.deleteOne({_id : prodId, userId : req.user._id}).then(product => {
-    if(product.userId !== req.user) {
-      return res.redirect('/')
+  Product.findById(prodId).then(product => {
+    if(!product) {
+      return next(new Error('Product not found!'))
     }
-    console.log('deleted')
-  }).then(resp => {
+    fileHelper.deleteFile(product.imageUrl)
+    return Product.deleteOne({_id : prodId, userId : req.user._id})
+  })
+  .then(resp => {
       console.log('PRODUCT DELETED')
       res.redirect('/admin/products')
   }).catch(err => {

@@ -2,6 +2,7 @@ const Product = require('../models/product');
 const Order = require('../models/order');
 const fs = require('fs')
 const path = require('path')
+const PDFDocument = require('pdfkit')
 // const getDb = require('../util/database').getDb
 
 const { ObjectID } = require('mongodb');
@@ -117,7 +118,9 @@ exports.postOrder = (req, res, next) => {
   .then(result => {
     res.redirect('/orders')
   })
-  .catch(err => console.log(err))
+  .catch(err =>{
+    return next(err)
+  })
   
 };
 
@@ -140,16 +143,47 @@ exports.getOrders = (req,res,next) => {
 exports.getInvoice = (req,res,next) => {
   const orderId = req.params.orderId;
   const invoiceName = 'invoice-' + orderId + '.pdf'
-  console.log(invoiceName)
   const invoicePath = path.join('data', 'invoices', invoiceName);
-  console.log(invoicePath)
-  fs.readFile(invoicePath, (err,data)=> {
-    console.log(data)
-    if(err) {
-      console.log('error gan')
-      return next(err)
+  Order.findById(orderId).then(order => {
+    if(!order) {
+      return next(new Error('No order Found'))
     }
-    res.send(data)
+    if(order.user.userId.toString() !== req.user._id.toString()) {
+      return next(new Error('Unauthorized User'))
+    }
+    // fs.readFileSync(invoicePath, (err,data)=> {
+    //   console.log(data)
+    //   if(err) {
+    //     return next(err)
+    //   }
+    //   res.setHeader('Content-Type','application/pdf')
+    //   res.setHeader('Content-Disposition', 'inline; filename="Invoice.pdf"')
+    //   res.send(data)
+    // })
+    const pdfDoc = new PDFDocument()
+    pdfDoc.pipe(fs.createWriteStream(invoicePath))
+    res.setHeader('Content-Type','application/pdf')
+    res.setHeader('Content-Disposition', 'inline; filename="Invoice.pdf"')
+    pdfDoc.pipe(res)
+    pdfDoc.fontSize(26).text('INVOICE')
+    pdfDoc.text('-------------------------------------------------')
+    pdfDoc.text('Order ID :' + order._id.toString())
+    let totalPrice = 0;
+    order.products.forEach(product => {
+      pdfDoc.text('Product Title : ' + product.productData.title);
+      pdfDoc.text('Price : ' + product.productData.price);
+      totalPrice = product.productData.price * product.quantity + totalPrice;
+    })
+    pdfDoc.text('Total Price : ' + totalPrice)
+
+    pdfDoc.end()
+    // const file = fs.createReadStream(invoicePath)
+    
+    // file.pipe(res)
+
+  }).catch(err => {
+    return next(err)
   })
+  
 }
 
