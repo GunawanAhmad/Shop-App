@@ -3,6 +3,8 @@ const { ObjectID} = require('mongodb');
 const product = require('../models/product');
 const fileHelper = require('../util/file')
 
+const ITEM_PER_PAGE = 10;
+
 
 exports.getAddProduct = (req, res, next) => {
   if(!req.session.isLoggedIn) {
@@ -134,13 +136,27 @@ exports.deleteProduct = (req,res,next) => {
 }
 
 exports.getProducts = (req, res, next) => {
-  Product.find({userId : req.user._id})
+  const page = +req.query.page || 1;
+  let totalProduct;
+  Product.countDocuments()
+  .then(num => {
+    totalProduct = num;
+    return Product.find({userId : req.user._id})
+    .skip((page - 1) * ITEM_PER_PAGE)
+    .limit(ITEM_PER_PAGE)
+  })
   .then(result => {
     res.render('admin/products', {
       prods: result,
       pageTitle: 'Admin Products',
       path: '/admin/products',
-      isAuthenticated : req.session.isLoggedIn
+      isAuthenticated : req.session.isLoggedIn,
+      totalProduct : totalProduct,
+      hasNextPage : ITEM_PER_PAGE * page < totalProduct,
+      hasPreviousPage : page > 1,
+      nextPage : page + 1,
+      prevPage : page - 1,
+      currentPage : page
     });
   }).catch(err => {
     const error = new Error(err)

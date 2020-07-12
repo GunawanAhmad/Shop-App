@@ -6,21 +6,36 @@ const PDFDocument = require('pdfkit')
 // const getDb = require('../util/database').getDb
 
 const { ObjectID } = require('mongodb');
+const ITEM_PER_PAGE = 10;
 
 exports.getProducts = (req, res, next) => {
   //you can use .populate() to get all user data not just the userID
   //in mongoose, req.user only return the user._id not all the data, use populate to fetch all the data
   //u also can use select() method to filter which data or field you want to fetch
   //but we dont need that method in this project
-  Product.find()
   // .select('title price -_id' )
   // .populate('userId')
+  const page = +req.query.page || 1;
+  let totalProduct;
+  Product.countDocuments()
+  .then(num => {
+    totalProduct = num;
+    return Product.find()
+    .skip((page - 1) * ITEM_PER_PAGE)
+    .limit(ITEM_PER_PAGE)
+  })
   .then(result => {
     res.render('shop/product-list', {
       prods: result,
       pageTitle: 'All Products',
       path: '/products',
-      isAuthenticated : req.session.isLoggedIn
+      isAuthenticated : req.session.isLoggedIn,
+      totalProduct : totalProduct,
+      hasNextPage : ITEM_PER_PAGE * page < totalProduct,
+      hasPreviousPage : page > 1,
+      nextPage : page + 1,
+      prevPage : page - 1,
+      currentPage : page
     });
   }).catch(err => {
     console.log(err)
@@ -29,12 +44,27 @@ exports.getProducts = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.find().then(result => {
+  const page = +req.query.page || 1;
+  let totalProduct;
+  Product.countDocuments()
+  .then(num => {
+    totalProduct = num;
+    return Product.find()
+    .skip((page - 1) * ITEM_PER_PAGE)
+    .limit(ITEM_PER_PAGE)
+  })
+  .then(result => {
     res.render('shop/index', {
       prods: result,
       pageTitle: 'Shop',
       path: '/',
-      
+      totalProduct : totalProduct,
+      hasNextPage : ITEM_PER_PAGE * page < totalProduct,
+      hasPreviousPage : page > 1,
+      nextPage : page + 1,
+      prevPage : page - 1,
+      currentPage : page,
+      // lastPage : Math.ceil(totalProduct * ITEM_PER_PAGE)
     });
   }).catch(err => {
     console.log(err)
