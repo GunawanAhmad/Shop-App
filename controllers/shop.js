@@ -4,8 +4,10 @@ const fs = require('fs')
 const path = require('path')
 const PDFDocument = require('pdfkit')
 // const getDb = require('../util/database').getDb
+const stripe = require('stripe')('sk_test_51H4OUqItzOBXoypcGYlIrvVIbm6iJNb3Vy76tOtww9hNuQ9KcH4AAfbJzURzgPO4CwsrthiEuuEVZBCxRyarJ5ZY00PiyjRSfu')
 
 const { ObjectID } = require('mongodb');
+const product = require('../models/product');
 const ITEM_PER_PAGE = 10;
 
 exports.getProducts = (req, res, next) => {
@@ -215,5 +217,49 @@ exports.getInvoice = (req,res,next) => {
     return next(err)
   })
   
+}
+
+
+exports.getCheckout = (req,res,next) => {
+  let total = 0;
+  let products;
+  req.user.populate('cart.items.productId')
+  .execPopulate() // puplate method does not give a promise, execPopulate will give the promise
+    .then(user => {
+      products = user.cart.items
+      products.forEach(product => {
+        total +=product.productId.price * product.quantity;
+      }) 
+
+      return stripe.checkout.sessions.create({
+        payment_metho_types : ['card'],
+        line_items : products.map(p => {
+          return {
+            name : p.productId.title,
+            description : p.productId.description,
+            amount : p.productId.price * 100,
+            currency : 'usd',
+            quantity : p.quantity 
+          }
+        }),
+        succes_url : req.protocol + '://' + req.get('host') + '/checkout/success', // https://localhost/checkout/succes
+        cancel_url : req.protocol + '://' + req.get('host') + '/checkout/cancel'
+        
+      })
+      
+    })
+    .then(session => {
+      res.render('shop/checkout', {
+        path: '/Checkout',
+        pageTitle: 'Checkout',
+        products : products,
+        totalPrice : total,
+        sessionId : session.id
+        
+      });
+    })
+  .catch(err=> {
+    console.log(err)
+  })
 }
 
